@@ -1,0 +1,998 @@
+1.
+A description of the design of your classes. We know what the public interfaces are, but what about your implementations: 
+What are the major data structures that you use? What private member functions or helper non-member 
+functions did you define for what purpose?
+
+Class Board::
+
+The Board class is implemented to represent the 
+game board we will be playing. 
+The diagram below shows the design of the board holes
+and it is implemented with a STL vector of type int 
+vector<int> board[]
+[0] N_pot
+[1] S_1
+[2] S_2
+[3]  
+---
+the index 0 and total number of hole/2 
+will be the pot of North and South 
+and index 1-total/2-1 will be pits of South
+and index total, total-1,total-2... total/2+1
+will be the pits of North. 
+
+Because of the way of my implementation 
+I create an private helper function 
+that will map the hole number [1- hole()]
+to the correct index 
+
+             N-----------------------
+             [11] [10]  [9]  [8]  [7]
+     N[0]                             S[6]
+             [1 ]  [2]  [3]  [4]  [5]
+             -----------------------S
+
+
+Class Player::
+
+For the player class it is similar to 
+homework2, but this time we are making a player 
+isInteractive() are made virtual and return false
+as default, where only the HumanPlayer will return 
+true. Furthermore, for the derived class of Player'
+
+- BadPlayer::
+when choosing move, it will only make move if the 
+game is not over.For my bad player, I simply use the random function 
+to generate a valid hole number as their move otherwise
+it will return -1 if game is over 
+
+-HumanPlayer::
+when choosing move, it will only make move if the 
+game is not over. For the Human player class
+it will use I/O to prompt user to enter hole number.
+to check the input, I create an helper function isValidMove();
+within the function it will then keep prompting with a do while
+loop until the user gives a valid input 
+
+-SmartPlayer::
+This was the most time spend in the project to come up the
+correct why to implement the minimax function. As before, 
+SmartPlayer will only make move when the game is not over.
+To implements the choosemove() function, my heuristics 
+is defined so that it is better if the difference between
+South pot and North pot. To achieved the goal, I create an
+eval function to evaluate each out come; a simulate function 
+to make an copy of the original board and apply the rules in the
+simulation, finally I apply the minimax and alpha beta pruning 
+algorithm in a recursive function .
+
+Class Game::
+
+The Game Class is all the set up that apply rules and help the players
+to complete the moves. Within the class I made an extra helper function 
+that will help to generate the correct pit_bars, and pot_bars when called
+the display() function. and the status() function will be commonly uses inside 
+the class to help  move() function to determine when the game is over, and
+all the error message possible. 
+
+
+2.
+A description of your design for SmartPlayer::chooseMove, 
+including what heuristics you used to evaluate board positions.
+Function used:: 
+For my implementation of chooseMove(), I follow the hint given 
+in the spec and apply the minimax algorithm. 
+when the function is called it will check if the game is over
+if the game is over the best hole will then be set to -1. if
+not then it will check if the base case is met,
+Base Case:
+	-time is up
+	-depth search is reached
+	-game is over 
+any  of the base case met will then evaluate that position and return -1
+if non of the base case is met, it will then visit each child of 
+the current state of the board, and called the function itself(recursion)
+function minimax(position, alarm ,depth alpha, beta, maximizingPlayer)
+for my South player it will always want to look for a greater value, which
+is the Maximize Player and the North player the vise versa.  
+within the function it also uses the alpa and beta pruning to save skip 
+some child that doesn't need to be visit (saves time)
+Evaulate(){ return the difference in number of beans between the two pots }
+
+then the function will compare the values and return the best hole as an outcome 
+and the reference eval in the parameter will then be set to that best value, for
+later use in compare or recursion.
+
+3. 
+pseudocode for non-trivial algorithms:
+
+Board Class::
+
+Board::Board(int nHoles, int nInitialBeansPerHole)
+{
+   check if the parameter is valid, modify if not
+   set up the vector 
+	for the given number of holes
+          push nInitialBeansPerHole into that hole pos
+}
+Board::Board( const Board& source)
+{
+   copy data member 
+    for the given number of holes pf source
+          push the amount at source[h] into my hole pos
+   
+}
+bool Board::sow(Side s, int hole, Side& endSide, int& endHole)
+{
+   check if the inputs are valid, if not return false 
+   convert the hole number into the correct index if need
+   while the (s,h) still has beans
+      distribute them counter clockwise
+       if( meet oppent's pot )
+         skip it 
+       increment the position
+       decrement the number of beans at (s,h)
+      
+}
+bool Board:: moveToPot(Side s, int hole, Side potOwner)
+{
+   check if the inputs are valid, if not return false
+    increment the number of beans of pot owners += beans(s,h);
+   then set beans at (s,h) to 0 
+   return true;
+}
+
+Player::
+
+int HumanPlayer:: chooseMove(const Board& b, Side s) const
+{
+   check if the game is over, if so return -1;
+   do{ 
+      print out message to prompt the user 
+      read the input 
+    }while( hole number is valid )
+   return hole_number 
+}
+// helper function for HumanPlayer:: chooseMove
+
+bool isValidMove(const Board& b, Side s, int hole)
+{
+   check if the hole number is valid based 
+   if( the beans(s,h) is empty)
+     send error message 
+     return false;
+   if( hole is not in valid range )
+     send error message 
+     return false;
+
+    return true;
+ }
+
+int BadPlayer::chooseMove(const Board& b, Side s)const
+{
+   check if the game is over, if so return -1
+  
+    do{
+        generat random number in the valid range of hole number per side
+    }while( beans(s,h) is empty or hole is bad number);
+    
+   return holenumber 
+}
+==SmartPlayer::chooseMove and Helper Functions
+int SmartPlayer::chooseMove(const Board &b, Side s)const
+{
+   if the game is over then return -1;
+   
+    return minimax_ab(b, s, eval, ac);
+}
+
+int SmartPlayer::minimax_ab( const Board& board, Side player, 
+int& eval,AlarmClock& alarm,int depth, int alpha, int beta )const
+{
+        if( depth has reached 0 )
+          evaluate 
+          return -1
+	if (alarmed )
+	  evaluate 
+          return -1
+        if( game is over )
+        {
+           make a copy of original board 
+           use the copy version to simulate the final result 
+	   evaluate 
+           set eval to evaluate 
+           return -1 
+         }
+
+
+	if( south )//  maximizingPlayer
+		maxEval = -infinity
+		for each child of position
+                        make a copy of the current board
+                        call simulate to get the final board state
+			eval = minimax(temp, opponent(player),
+                               evalu, alarm,depth-1, alpha, beta)
+			maxEval = max(maxEval, eval)
+			alpha = max(alpha, eval)
+			if beta <= alpha
+				break
+                set eval to maxVal
+		return best hole
+	else ( North )
+		minEval = +infinity
+		for each child of position
+                        make a copy of the current board
+                        call simulate to get the final board state
+			eval = minimax(temp, opponent(player), 
+                               evalu, alarm,depth-1, alpha, beta)
+			minEval = min(minEval, eval)
+			beta = min(beta, eval)
+			if beta <= alpha
+				break
+		set eval to minVal
+		return best hole
+
+Class Game::
+
+void Game::status(bool& over, bool& hasWinner, Side& winner) const
+{
+     if( is game over )
+     {   set ovet to true
+         get the number of beans in Pot South
+         get the number of beans in Pot North
+         
+         if( they are the same)
+             hasWineer set to false
+         else
+         {
+            hasWinner set to true 
+             if( pot_s > pot_n)
+                South is set to winner 
+             else
+                North is set to winner
+
+          }
+
+
+      }else
+           over is set to false
+
+}
+bool Game::move()
+{
+    if( game is over)
+        return false;
+     Determine and set he current player 
+     
+      let the current player pick the move 
+      print out the hole number of the pick 
+      sow that move // sow doesn't apply rule 
+       // check if can go again 
+       check if the game is over, if not
+       {
+         if(last beans placed in the player's pot)
+         do
+        { 
+           display()
+           prompt the player with message
+           let the current player pick the move 
+            print out the hole number of the pick 
+             sow that move  
+         }while( can still go again )
+
+  
+       }
+       // check if it is a capture 
+      check if the game is over, if not
+       {
+         if(last beans placed in a previous empty pot and
+            the opposite side hole is not empty)
+            moveTOpot() from (opponent(endSide), endHole) to player's pot
+            moveTOpot() from (endside, endhole )to player's pot
+        
+       }
+       
+       if( game is over)
+       {
+
+            if( South is empty)
+            {
+               set the owner to NORTH
+               for( all the remain beans in NORTH)
+                  move them to NORTH's POT
+             }
+             else if( NORTH is empty)
+            {
+               set the owner to SOUTH
+               for( all the remain beans in SOUTH)
+                  move them to SOUTH's POT
+             }else 
+                 return false; 
+             prompt the sweeping message to player 
+             dispaly()
+             return false 
+
+       }
+       // make the turn 
+       reset the currentPlayer to the other player 
+       return true; // game is not yet over 
+
+}
+void Game::play()
+{
+   if( south side has no beans to start the movie )
+   {
+       display();
+       if( NORTH is not empty)
+         set the winner to NORTH
+         for( all the remain beans in NORTH)
+            move them to NORTH's POT
+          prompt the sweeping message to player 
+          dispaly()
+          call status() // to update status  
+    }else
+    {
+        do{
+          display()
+          if( neither player is interactive )
+          {
+            prompt the ENTER message 
+            wait for the Enter key 
+            cin.ignore(10000, '\n');
+          }
+          make a move()
+          call status() // to update status  
+        }while( can move)
+
+     }
+
+      // out of if 
+      call status() // to update status
+      if( we have a winner )
+         determine the winner name 
+         prompt the winning message 
+      else
+         prompt the game tie message  
+
+}
+
+3.
+A note about any known bugs, serious inefficiencies, or notable problems you had.
+- Not pretty clear of when to display  
+- Not sure if the minimax is implemented as the spec expected 
+
+4.
+A list of the test cases that would thoroughly test the functions. 
+Be sure to indicate the purpose of the tests. 
+Even if you do not correctly implement all the functions, you can still list test cases that would test them. 
+Don't lose points by thinking "Well, I didn't implement this function, 
+so I won't bother saying how I would have tested it if I had implemented it."
+
+
+void doBoardTests()
+{
+================================================
+    // very basic functionality checks
+================================================
+    Board b(3, 2);
+    assert(b.holes() == 3  &&  b.totalBeans() == 12  &&
+           b.beans(SOUTH, POT) == 0  &&  b.beansInPlay(SOUTH) == 6);
+    b.setBeans(SOUTH, 1, 1);
+    b.moveToPot(SOUTH, 2, SOUTH);
+    assert(b.totalBeans() == 11  &&  b.beans(SOUTH, 1) == 1  &&
+           b.beans(SOUTH, 2) == 0  &&  b.beans(SOUTH, POT) == 2  &&
+           b.beansInPlay(SOUTH) == 3);
+   // case where the beans must go over the pit of other player TEST
+    Side es;
+    int eh;
+    b.sow(SOUTH, 3, es, eh);
+    assert(es == NORTH  &&  eh == 3  &&  b.beans(SOUTH, 3) == 0  &&
+           b.beans(NORTH, 3) == 3  &&  b.beans(SOUTH, POT) == 3  &&
+           b.beansInPlay(SOUTH) == 1  &&  b.beansInPlay(NORTH) == 7);
+}
+
+void doBoardTests2() // more interesting testing 
+{
+    // BASIC TEST
+    Board b(3, 2);
+    assert(b.holes() == 3  &&  b.totalBeans() == 12  &&
+           b.beans(SOUTH, POT) == 0  &&  b.beansInPlay(SOUTH) == 6);
+    b.setBeans(SOUTH, 1, 1);
+    b.moveToPot(SOUTH, 2, SOUTH);
+    assert(b.totalBeans() == 11  &&  b.beans(SOUTH, 1) == 1  &&
+           b.beans(SOUTH, 2) == 0  &&  b.beans(SOUTH, POT) == 2  &&
+           b.beansInPlay(SOUTH) == 3);
+    Side es;
+    int eh;
+    b.sow(SOUTH, 3, es, eh);
+        assert(es == NORTH  &&  eh == 3  &&  b.beans(SOUTH, 3) == 0  &&
+           b.beans(NORTH, 3) == 3  &&  b.beans(SOUTH, POT) == 3  &&
+           b.beansInPlay(SOUTH) == 1  &&  b.beansInPlay(NORTH) == 7);
+================================================
+ /////////////////////////////
+// many go around TEST
+/////////////////////////////////
+================================================
+    Board b1(3, 5);
+    assert(b1.holes() == 3  &&  b1.totalBeans() == 30  &&
+           b1.beans(SOUTH, POT) == 0  &&  b1.beansInPlay(SOUTH) == 15 &&
+           b1.beansInPlay(NORTH) == 15);
+    b1.setBeans(SOUTH, 1, 1);
+    b1.moveToPot(NORTH, 2, SOUTH);
+    assert(b1.totalBeans() == 26  &&  b1.beans(SOUTH, 1) == 1  &&
+           b1.beans(NORTH, 2) == 0  &&  b1.beans(SOUTH, POT) == 5  &&
+           b1.beansInPlay(SOUTH) == 11 && b1.beansInPlay(NORTH) == 10);
+    
+    b1.sow(SOUTH, 3, es, eh);
+    assert(es == SOUTH  &&  eh == 1  &&  b1.beans(SOUTH, 3) == 0  &&
+           b1.beans(NORTH, 3) == 6 && b1.beans(NORTH, 2) == 1 && b1.beans(NORTH, 1) == 6
+           &&  b1.beans(NORTH, POT) == 0 &&  b1.beans(SOUTH, POT) == 6  && b1.beans(SOUTH, 1) == 2&&
+           b1.beansInPlay(SOUTH) == 7  &&  b1.beansInPlay(NORTH) == 13);
+    
+    Board b2( 6, 5);
+    /*
+        5 5 5 5 5 5
+     0              0
+        5 5 5 5 5 5
+     */
+================================================
+     /////////////////////////////////
+    // hole return test
+    /////////////////////////////////
+================================================
+    assert( b2.holes() == 6);
+================================================
+    /////////////////////////////////
+    // beans( s, h ) return test
+    /////////////////////////////////
+================================================
+    for( int hole = 1 ; hole <=  b2.holes();hole++)
+    {
+        assert(b2.beans(SOUTH, hole)== 5);
+        assert(b2.beans(NORTH, hole)== 5);
+    }
+================================================
+    /////////////////////////////////
+    // test if pot start at 0 beans
+    /////////////////////////////////
+================================================
+    assert(b2.beans(SOUTH, 0)== 0);
+    assert(b2.beans(NORTH, 0)== 0);
+    assert(b2.beansInPlay(SOUTH) == 30);
+    assert(b2.beansInPlay(NORTH) == 30);
+================================================
+     /////////////////////////////////
+    // this will test if any beans are lost after many move
+    ///////////////////////////////////
+    int bf_m = b2.totalBeans();
+    assert(bf_m == 60);
+================================================
+    /////////////////////////////////
+    //SOUTH MOVE AND GO AROUND TEST
+   /////////////////////////////////
+    // TEST MOVE
+     /////////////////////////////////
+    // Kalah move TEST
+    /////////////////////////////////  
+================================================
+    Side endSide;
+    int endHole;
+    b2.sow(SOUTH, 2, endSide,endHole);
+    assert(b2.beans(SOUTH, 0)== 1 && b2.beans(SOUTH, 2)==0 && b2.beans(SOUTH, 3)==6
+              && b2.beans(SOUTH, 4)==6 &&b2.beans(SOUTH, 5)==6);
+================================================
+    /////////////////////////////////
+    // should not affect north
+   /////////////////////////////////
+================================================
+    for( int hole = 1 ; hole <=  b2.holes();hole++)
+    {
+        assert(b2.beans(NORTH, hole)== 5);
+    }
+           /*
+             5 5 5 5 5 5
+            0            1
+             5 0 6 6 6 6
+            */
+   b2.sow(SOUTH, 1, endSide,endHole);
+    assert(b2.beans(SOUTH, 0)== 1 && b2.beans(SOUTH, 2)==1 && b2.beans(SOUTH, 3)==7
+           &&b2.beans(SOUTH, 4)==7&&b2.beans(SOUTH, 5)==7 && b2.beans(SOUTH, 1)==0 && endSide == SOUTH
+         &&endHole==6);
+================================================
+     /////////////////////////////////
+    // should not affect north
+   /////////////////////////////////
+================================================
+   for( int hole = 1 ; hole <=  b2.holes();hole++)
+    {
+     assert(b2.beans(NORTH, hole)== 5);
+    }
+          /*
+             5 5 5 5 5 5
+           0             1
+             0 1 7 7 7 7
+           */
+   b2.setBeans(SOUTH,2, 0);
+   b2.setBeans(SOUTH,6, 8);
+          /*
+            5 5 5 5 5 5
+           0             1
+            0 0 7 7 7 8
+           */
+================================================
+    /////////////////////////////////
+    // skip opp pot test
+    // should not go into opp's pot
+    /////////////////////////////////
+================================================
+    /*
+       6 6 6 6 6 6
+     0             2
+       1 0 7 7 7 0
+     */
+ b2.sow(SOUTH, 6, endSide,endHole);
+ assert(b2.beans(SOUTH, 0)== 2 && b2.beans(SOUTH, 2)==0 && b2.beans(SOUTH, 3)==7
+   &&b2.beans(SOUTH, 4)==7&&b2.beans(SOUTH, 5)==7 && b2.beans(SOUTH, 6)==0 &&b2.beans(SOUTH, 1)==1
+               && endSide == SOUTH
+     &&endHole==1);
+        for( int hole = 1 ; hole <=  b2.holes();hole++)
+        {
+         assert(b2.beans(NORTH, hole)== 6);
+        }
+================================================    
+   /////////////////////////////////
+     //NORTH MOVE AND GO AROUND TEST
+   /////////////////////////////////
+================================================
+    b2.sow(NORTH, 6, endSide,endHole);
+    assert(b2.beans(SOUTH, 0)== 2 && b2.beans(SOUTH, 2)==0 && b2.beans(SOUTH, 3)==7
+           &&b2.beans(SOUTH, 4)==7&&b2.beans(SOUTH, 5)==7 && b2.beans(SOUTH, 6)==0 &&b2.beans(SOUTH, 1)==1);
+    assert(b2.beans(NORTH, 0)== 1 && b2.beans(NORTH, 2)==7 && b2.beans(NORTH, 3)==7
+           &&b2.beans(NORTH, 4)==7&&b2.beans(NORTH, 5)==7 && b2.beans(NORTH, 6)==0 &&b2.beans(NORTH, 1)==7
+           && endHole == NORTH
+           &&endHole==0);
+    /*
+       7 7 7 7 7 0
+     1             2
+       1 0 7 7 7 0
+     */
+    b2.setBeans(NORTH, 1, 11);
+    b2.setBeans(NORTH, 2, 3);
+================================================
+    /////////////////////////////////
+    // This sow, will cause North1 to go around the table and end up one pos of the start
+    // beans should not increase the beans in south pot
+    /////////////////////////////////
+================================================
+    b2.sow(NORTH, 1, endSide,endHole);
+    assert(b2.beans(SOUTH, 0)== 2 && b2.beans(SOUTH, 2)==1 && b2.beans(SOUTH, 3)==8
+           &&b2.beans(SOUTH, 4)==8&&b2.beans(SOUTH, 5)==8 && b2.beans(SOUTH, 6)==1 &&b2.beans(SOUTH, 1)==2);
+    /*
+     0 3 8 8 8 1
+     2             2
+     2 1 8 8 8 1
+     */
+    assert(b2.beans(NORTH, 0)== 2 && b2.beans(NORTH, 2)==3 && b2.beans(NORTH, 3)==8
+           &&b2.beans(NORTH, 4)==8&&b2.beans(NORTH, 5)==8 && b2.beans(NORTH, 6)==1 &&b2.beans(NORTH, 1)==0
+           && endSide == NORTH
+           &&endHole==3);
+    for( int hole = 1 ; hole <=  b2.holes();hole++)
+        b2.moveToPot(NORTH, hole, SOUTH);
+    for( int hole = 1 ; hole <=  b2.holes();hole++)
+    {
+        assert(b2.beans(NORTH, hole)== 0);
+    }
+    assert(b2.beans(SOUTH,POT) == 30);
+    // total bean no less test
+    assert(b2.totalBeans() == bf_m);
+    /*
+      0 0 0 0 0 0
+     2             30
+      2 1 8 8 8 1
+     */
+}
+
+
+void doPlayerTests()
+{
+================================================
+    /////////////////////////////////
+    // basic function test 
+    /////////////////////////////////
+================================================
+    HumanPlayer hp("Marge");
+    assert(hp.name() == "Marge"  &&  hp.isInteractive());
+    BadPlayer bp("Homer");
+    assert(bp.name() == "Homer"  &&  !bp.isInteractive());
+    SmartPlayer sp("Lisa");
+    assert(sp.name() == "Lisa"  &&  !sp.isInteractive());
+    Board b(3, 2);
+    b.setBeans(SOUTH, 2, 0);
+    cout << "=========" << endl;
+    int n = hp.chooseMove(b, SOUTH);
+    cout << "=========" << endl;
+    assert(n == 1  ||  n == 3);
+    n = bp.chooseMove(b, SOUTH);
+    assert(n == 1  ||  n == 3);
+    n = sp.chooseMove(b, SOUTH);
+    assert(n == 1  ||  n == 3);
+}
+
+void doPlayerTest2()
+{
+================================================
+     /////////////////////////////////
+    // TEST:: is the virtual function defined correctly
+    /////////////////////////////////
+================================================
+    BadPlayer bp("Homer");
+    assert(bp.name() == "Homer"  &&  !bp.isInteractive());
+    HumanPlayer hp("Marge");
+    assert(hp.name() == "Marge"  &&  hp.isInteractive());
+    BadPlayer bp2("Bart");
+    assert(bp2.name() == "Bart"  &&  !bp2.isInteractive());
+    SmartPlayer sp("Lisa");
+    assert(sp.name() == "Lisa"  &&  !sp.isInteractive());
+    SmartPlayer sp2("Meggie");
+    assert(sp2.name() == "Meggie"  &&  !sp2.isInteractive());
+    
+    /*
+       1 2 3 4
+     3         5
+       1 2 3 4
+     */
+================================================
+    /////////////////////////////////
+    // TEST:: Basic no choice CHOICE test
+    /////////////////////////////////
+================================================
+    Board b(3, 2);
+    b.setBeans(SOUTH, 2, 0);
+    cout << "=========" << endl;
+    int n = hp.chooseMove(b, SOUTH);
+    cout << "=========" << endl;
+    assert(n == 1  ||  n == 3);
+    n = bp.chooseMove(b, SOUTH);
+    assert(n == 1  ||  n == 3);
+    n = sp.chooseMove(b, SOUTH);
+    assert(n == 1  ||  n == 3);
+    
+================================================
+       THESE ARE DESIGNED TEST CASE
+       Smart player should make Smart Choice
+================================================
+   
+    Board b2(3, 2);
+        b2.setBeans(SOUTH, 2, 0);
+        b2.setBeans(SOUTH, 3, 1);
+        b2.setBeans(NORTH, 1, 3);
+    /*
+       3 2 2
+     0       0
+       2 0 1
+     */
+    cout << "^^^^^^^^^" << endl;
+    int n_sp = sp.chooseMove(b2, SOUTH);
+==============================================
+    if the tree were to be drawn
+    3 is a better choice than 1
+==============================================
+    assert(n_sp == 3);
+
+
+
+    cout << "^^^^^^^^^" << endl;
+    Board b3(3, 2);
+    b3.setBeans(SOUTH, 1, 1);
+    b3.setBeans(SOUTH, 2, 1);
+    b3.setBeans(SOUTH, 3, 0);
+    b3.setBeans(NORTH, 3, 0);
+    b3.setBeans(NORTH, 2, 3);
+    b3.setBeans(SOUTH, POT, 5);
+    /*
+       2 3 0
+     0       5
+       1 1 0
+     */
+==============================================
+     // 1 is a better choice than 2
+    n_sp = sp.chooseMove(b3, SOUTH);
+    assert(n_sp == 1);
+==============================================
+}
+void doGameTests()
+{
+
+////////////////////////////////////////////////////////////
+//Multi TEST in GAME, TEST MOVE + BAD PALYER CHOOSE MOVE()
+///////////////////////////////////////////////////////////
+================================================
+
+    BadPlayer bp1("Bart");
+    BadPlayer bp2("Homer");
+    Board b(3, 0);
+    b.setBeans(SOUTH, 1, 2);
+    b.setBeans(NORTH, 2, 1);
+    b.setBeans(NORTH, 3, 2);
+    Game g(b, &bp1, &bp2);
+    bool over;
+    bool hasWinner;
+    Side winner;
+    //    Homer
+    //   0  1  2
+    // 0         0
+    //   2  0  0
+    //    Bart
+    g.status(over, hasWinner, winner);
+    assert(!over && g.beans(NORTH, POT) == 0 && g.beans(SOUTH, POT) == 0 &&
+           g.beans(NORTH, 1) == 0 && g.beans(NORTH, 2) == 1 && g.beans(NORTH, 3) == 2 &&
+           g.beans(SOUTH, 1) == 2 && g.beans(SOUTH, 2) == 0 && g.beans(SOUTH, 3) == 0);
+    
+    g.move();
+    //   0  1  0
+    // 0         3
+    //   0  1  0
+    g.status(over, hasWinner, winner);
+    assert(!over && g.beans(NORTH, POT) == 0 && g.beans(SOUTH, POT) == 3 &&
+           g.beans(NORTH, 1) == 0 && g.beans(NORTH, 2) == 1 && g.beans(NORTH, 3) == 0 &&
+           g.beans(SOUTH, 1) == 0 && g.beans(SOUTH, 2) == 1 && g.beans(SOUTH, 3) == 0);
+    
+    g.move();
+    //   1  0  0
+    // 0         3
+    //   0  1  0
+    g.status(over, hasWinner, winner);
+    assert(!over && g.beans(NORTH, POT) == 0 && g.beans(SOUTH, POT) == 3 &&
+           g.beans(NORTH, 1) == 1 && g.beans(NORTH, 2) == 0 && g.beans(NORTH, 3) == 0 &&
+           g.beans(SOUTH, 1) == 0 && g.beans(SOUTH, 2) == 1 && g.beans(SOUTH, 3) == 0);
+    
+    g.move();
+    //   1  0  0
+    // 0         3
+    //   0  0  1
+    g.status(over, hasWinner, winner);
+    assert(!over && g.beans(NORTH, POT) == 0 && g.beans(SOUTH, POT) == 3 &&
+           g.beans(NORTH, 1) == 1 && g.beans(NORTH, 2) == 0 && g.beans(NORTH, 3) == 0 &&
+           g.beans(SOUTH, 1) == 0 && g.beans(SOUTH, 2) == 0 && g.beans(SOUTH, 3) == 1);
+    
+    g.move();
+    //   0  0  0
+    // 1         4
+    //   0  0  0
+    g.status(over, hasWinner, winner);
+    assert(over && g.beans(NORTH, POT) == 1 && g.beans(SOUTH, POT) == 4 &&
+           g.beans(NORTH, 1) == 0 && g.beans(NORTH, 2) == 0 && g.beans(NORTH, 3) == 0 &&
+           g.beans(SOUTH, 1) == 0 && g.beans(SOUTH, 2) == 0 && g.beans(SOUTH, 3) == 0);
+
+    //  TEST GAME STATUS 
+    assert(hasWinner && winner == SOUTH);
+================================================
+}
+
+///////////////////////////////////
+// PRINT A SAMPLE GAME BOARD TEST 
+///////////////////////////////////
+void gameDisplaytest()
+{
+    SmartPlayer bp1("Bart");
+    BadPlayer bp2("Homer");
+    Board b(10,3);
+    Game g(b, &bp1, &bp2);
+    g.display();
+}
+void doGameTest2()
+{
+    HumanPlayer hp("Marge");
+    assert(hp.name() == "Marge"  &&  hp.isInteractive());
+    SmartPlayer sp("Lisa");
+    assert(sp.name() == "Lisa"  &&  !sp.isInteractive());
+    SmartPlayer sp2("Meggie");
+    assert(sp2.name() == "Meggie"  &&  !sp2.isInteractive());
+================================================
+///////////////////////////////////
+//        play() test
+///////////////////////////////////
+================================================
+    Board b(3,0);
+    BadPlayer bp1("Bart");
+    BadPlayer bp2("Homer");
+    // the board is all empty
+    Game g(b, &bp1, &bp2);
+    g.play();
+    b.setBeans(NORTH, 2, 1);
+    b.setBeans(NORTH, 3, 2);
+    Game g1(b, &bp1, &bp2);
+================================================
+SOUTH HAS NO BEANS TO START TEST
++SWEEP PROMPT 
+    /*
+     (Note: If when this function is called, South has no beans in play, so can't make
+     the first move, sweep any beans on the North side into North's pot and act as if the game is thus over.)
+     */
+================================================
+    g1.play();
+================================================
+    // TEST IF  promt ENTER to user
+================================================
+ // TEST computer vs computer and computer vs human
+================================================
+    //comp vs comp
+    Board b_cvc(3,2);
+    // TEST BAD VS BAD
+    Game g_cvc(b_cvc, &bp1, &bp2);
+    Game g_cvc_sp_bp(b_cvc,&sp,&bp1);
+    Game g_cvc_sp_sp(b_cvc,&sp,&sp2);
+    Game g_hvc_sp(b_cvc,&sp,&hp);
+    Game g_hvc_bp(b_cvc, &hp, &bp2);
+    g_cvc.play();
+================================================
+///////////////////////////////////
+    // TEST SMART VS BAD
+///////////////////////////////////
+    g_cvc_sp_bp.play();
+================================================
+///////////////////////////////////
+    // TEST SMART VS SMART !!
+///////////////////////////////////
+    g_cvc_sp_sp.play();
+================================================
+///////////////////////////////////
+    // TEST SMART VS HUMAN !!
+///////////////////////////////////
+    g_hvc_sp.play();
+================================================
+///////////////////////////////////
+    // TEST BAD VS HUMAN !!
+///////////////////////////////////
+    g_hvc_bp.play();
+================================================
+   
+     // A GOOD TEST is JUST TO PLAY
+    
+================================================
+///////////////////////////////////
+    // GAME2- CPATURE TEST
+///////////////////////////////////
+================================================
+
+    bool over;
+    bool hasWinner;
+    Side winner;
+    Board b2(3,0);
+    b2.setBeans(SOUTH, 1, 2);
+    b2.setBeans(NORTH, 2, 1);
+    b2.setBeans(NORTH, 3, 3);
+    b2.setBeans(NORTH, 0, 1);
+    Game g2(b2, &bp1, &bp2);
+    //   0  1  3
+    // 1         0
+    //   2  0  0
+    g2.display();
+    g2.status(over, hasWinner, winner);
+    // should not be over yet
+    assert(!over && g2.beans(NORTH, 1) == 0 && g2.beans(NORTH, 2) == 1 && g2.beans(NORTH, 3) == 3
+           &&g2.beans(SOUTH, 1) == 2 && g2.beans(SOUTH, 2) == 0 && g2.beans(SOUTH, 3) == 0
+           && g2.beans(NORTH, 0) == 1 && g2.beans(SOUTH, 0) == 0);
+    // SOUTH alway start the game
+    g2.move();
+    //   0  1  3
+    // 1         0
+    //   0  1  1
+================================================
+    // leaving no choice + capture
+================================================
+    //   0  1  0
+    // 1         4
+    //   0  1  0
+    g2.display();
+    g2.status(over, hasWinner, winner);
+    assert(!over && g2.beans(NORTH, 1) == 0 && g2.beans(NORTH, 2) == 1 && g2.beans(NORTH, 3) == 0
+           &&g2.beans(SOUTH, 1) == 0 && g2.beans(SOUTH, 2) == 1 && g2.beans(SOUTH, 3) == 0
+           && g2.beans(NORTH, 0) == 1 && g2.beans(SOUTH, 0) == 4);
+    // NORTH TURN
+    g2.move();
+    //   1  0  0
+    // 1         4
+    //   0  1  0
+    g2.display();
+    g2.status(over, hasWinner, winner);
+    assert(!over && g2.beans(NORTH, 1) == 1 && g2.beans(NORTH, 2) == 0 && g2.beans(NORTH, 3) == 0
+           &&g2.beans(SOUTH, 1) == 0 && g2.beans(SOUTH, 2) == 1 && g2.beans(SOUTH, 3) == 0
+           && g2.beans(NORTH, 0) == 1 && g2.beans(SOUTH, 0) == 4);
+    
+     // SOUTH TURN
+    g2.move();
+    //   1  0  0
+    // 1         4
+    //   0  0  1
+    g2.display();
+    g2.status(over, hasWinner, winner);
+    assert(!over && g2.beans(NORTH, 1) == 1 && g2.beans(NORTH, 2) == 0 && g2.beans(NORTH, 3) == 0
+           &&g2.beans(SOUTH, 1) == 0 && g2.beans(SOUTH, 2) == 0 && g2.beans(SOUTH, 3) == 1
+           && g2.beans(NORTH, 0) == 1 && g2.beans(SOUTH, 0) == 4);
+    //NORTH TURN
+    g2.move();
+    //   0  0  0
+    // 2         4
+    //   0  0  1
+================================================
+
+    // WE HAVE A GAME OVER test
+    // SWEEP SWEEP prompt test
+================================================
+
+    //   0  0  0
+    // 2         5
+    //   0  0  0
+    g2.display();
+    g2.status(over, hasWinner, winner);
+    assert(hasWinner && winner == SOUTH);
+    assert(over && g2.beans(NORTH, 1) == 0 && g2.beans(NORTH, 2) == 0 && g2.beans(NORTH, 3) == 0
+           &&g2.beans(SOUTH, 1) == 0 && g2.beans(SOUTH, 2) == 0 && g2.beans(SOUTH, 3) == 0
+           && g2.beans(NORTH, 0) == 2 && g2.beans(SOUTH, 0) == 5);
+================================================ 
+///////////////////////////////////
+    // GAME3- GO AGAIN TEST
+///////////////////////////////////
+================================================
+
+    //   0  0  1
+    // 1         1
+    //   3  2  1
+    Board b3(3,0);
+    b3.setBeans(NORTH, 0, 1);
+    b3.setBeans(NORTH, 1, 0);
+    b3.setBeans(NORTH, 2, 0);
+    b3.setBeans(NORTH, 3, 1);
+    b3.setBeans(SOUTH, 0, 1);
+    b3.setBeans(SOUTH, 1, 3);
+    b3.setBeans(SOUTH, 2, 2);
+    b3.setBeans(SOUTH, 3, 1);
+    Game g3(b3, &hp, &sp);
+    g3.display();
+================================================
+ // GO AGAIN and Capture TEST
+  //  g3.play();
+================================================
+    // HUMTURN
+    g3.move();
+
+     // STILL HUMTURN
+    //   0  0  1
+    // 1         3
+    //   3  0  1
+
+
+    //   0  0  1
+    // 1         4
+    //   0  1  2
+    
+    
+    assert(over && g3.beans(NORTH, 1) == 0 && g3.beans(NORTH, 2) == 0 && g3.beans(NORTH, 3) == 2
+        &&g3.beans(SOUTH, 1) == 0 && g3.beans(SOUTH, 2) == 1 && g3.beans(SOUTH, 3) == 0
+        && g3.beans(NORTH, 0) == 1 && g3.beans(SOUTH, 0) == 5);
+    
+    //   1  1  0
+    // 1         5
+    //   0  1  0
+    
+    g3.move();
+    g3.display();
+    assert(over && g3.beans(NORTH, 1) == 1 && g3.beans(NORTH, 2) == 1 && g3.beans(NORTH, 3) == 0
+           &&g3.beans(SOUTH, 1) == 0 && g3.beans(SOUTH, 2) == 1 && g3.beans(SOUTH, 3) == 0
+           && g3.beans(NORTH, 0) == 1 && g3.beans(SOUTH, 0) == 5);
+        g3.move();
+        g3.display();
+================================================
+EMOTY BOARD START GAEM TEST
+================================================
+    Board b404( 3, 0);
+    Game g4( b404, &bp1, &bp1);
+    assert(!g4.move());
+}
+
+
+
+
+
