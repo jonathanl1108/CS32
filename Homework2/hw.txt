@@ -1,0 +1,50 @@
+Given the algorithm, main function, and maze shown at the end of problem 1, what are the first 12 (r,c) coordinates popped off the stack by the algorithm?
+2.
+
+Maze solver implement with stack 
+1.  ( 3 , 5 )
+2.  ( 3 , 6 )
+3.  ( 3 , 4 )
+4.  ( 2 , 4 )
+5.  ( 1 , 4 )
+6.  ( 1 , 3 )
+7.  ( 1 , 2 )
+8.  ( 1 , 1 )
+9.  ( 2 , 1 )
+10. ( 3 , 3 )
+11. ( 4 , 5 )
+12. ( 5 , 5 )
+
+4.
+Given the same main function and maze as are shown at the end of problem 1, what are the first 12 (r,c) coordinates popped from the queue in your queue-based algorithm?
+
+1.  ( 3 , 5 )
+2.  ( 4 , 5 )
+3.  ( 3 , 4 )
+4.  ( 3 , 6 )
+5.  ( 5 , 5 )
+6.  ( 3 , 3 )
+7.  ( 2 , 4 )
+8.  ( 6 , 5 )
+9.  ( 5 , 4 )
+10. ( 1 , 4 )
+11. ( 7 , 5 )
+12. ( 5 , 3 )
+
+
+How do the two algorithms differ from each other? (Hint: how and why do they visit cells in the maze in a different order?)
+
+The output order from the maze solver is different because of the different characteristic
+of stack and queue. The algorithm is implemented differently in problem 1 and 3, where the former uses the stack  and the later uses the queue. Since stack is a First in last out, during the process of finding a solvable path, the position around the starting point will be check last, in other word the top of the stack which is the newest available coordinate
+will be process first. On the other hand, in problem 3, the maze solving algorithm is implemented with a queue, which the coordinate is inserted and removed according to the First in First out principle, and thus the coordinate around he staring point will be process first; in other word the queue will be processing the coordinate base on the order 
+it is being pushed, and the newest available coordinate will then be process the last 
+
+
+
+
+
+
+
+
+
+
