@@ -1,0 +1,61 @@
+2. 
+The complier error 
+	 sc.insert(Coord(40,10));     // error!
+is caused, because inside the implementation of sequence class
+the function "int insert(const ItemType& value)" need
+to return the position p, such that value <= the item at position p 
+in the sequence. However, the Coord class unlike other primitive type 
+(int or string), that can be compared easily by bytes.Therefore, 
+The sequence class wouldn't know how to compare coord objects, and to
+make it work, we will have to implement a definition == and <= in
+the Coord class.
+
+4b.
+We introduced the two-parameter overload of listAll. Why could you not solve this problem given the constraints in part a if we had only a one-parameter listAll, and you had to implement it as the recursive function?
+If we only have one parameter, we wouldn't be able to remember what the root is 
+and therefore don't know the path name from the previous (the root). Because of 
+this, we must have 2 parameter in order to build up the path and find the subdomains 
+
+5a
+Answer :  N(O^3)
+
+In the implementation of code
+there are 3 for loop standing out. 
+In the most outer loop index i will
+be visit N times. Secondly, the index j 
+in the middle loop will also be visit N times
+then finally the most inner loop, has 
+an index k behaves the same as i and j. 
+therefore the complexity is  N(O^3)
+
+5b
+Answer :  N(O^3)
+
+In the implementation of code
+there are 3 for loop standing out.
+In the most outer loop index i will
+be visit N times. Secondly, the index j 
+will be visit max "i" times, thus we 
+replace i with N (_since i will be visit 
+N times) then finally the most inner loop,
+index k will also be visit N times.
+therefore the complexity is still N(O^3)
+
+6
+
+Answer :  O(N^2)
+
+Firstly, the for loop takes N times to iterates
+then by checking the implementation 
+for Sequence::get, we see that it will take at most 
+N/2 times to find the pos by nodeAtPos(). then, the 
+implementation of insert also contains a function
+nodeAtPos(), which in the worst case can take
+at most N/2 times to find that position. 
+and thus the calculation of the big O is as follow 
+O(N)*(O(N/2)+O(N/2))
+=> therefore the BigO of this function
+will be O(N^2)
+
+
+
